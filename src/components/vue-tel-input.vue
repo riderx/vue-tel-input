@@ -1,7 +1,7 @@
 <template>
   <div :class="['vue-tel-input', styleClasses, { disabled: disabled }]">
     <div
-      v-click-outside="clickedOutside"
+      ref="target"
       aria-label="Country Code Selector"
       aria-haspopup="listbox"
       :aria-expanded="open"
@@ -82,7 +82,7 @@
 <script>
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import utils, { getCountry, setCaretPosition } from '../utils';
-import clickOutside from '../directives/click-outside';
+import { onClickOutside } from '@vueuse/core'
 
 function getDefault(key) {
   const value = utils.options[key];
@@ -190,6 +190,19 @@ export default {
       dropdownOpenDirection: 'below',
       parsedPlaceholder: this.inputOptions.placeholder,
     };
+  },
+  setup() {
+    const open = ref(false);
+    const target = ref(null)
+
+    onClickOutside(target, (event) => {
+        open.value = false;
+    })
+
+    return {
+      target,
+      open
+    }
   },
   computed: {
     activeCountry() {
@@ -537,9 +550,6 @@ export default {
         return;
       }
       this.open = !this.open;
-    },
-    clickedOutside() {
-      this.open = false;
     },
     keyboardNav(e) {
       if (e.keyCode === 40) {
